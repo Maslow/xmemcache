@@ -2,8 +2,8 @@ package node
 
 import (
 	"github.com/maslow/xmemcache/hasher"
-	//"github.com/maslow/xmemcache/config"
 	"strconv"
+	"strings"
 )
 
 //默认<复制个数>
@@ -39,23 +39,33 @@ func (n *Nodes) generateRealNodeSet(servers []string) {
 	}
 }
 
-//初始化
+//初始化，根据配置生成物理与虚拟节点
 func (n *Nodes) Init(config []string) {
 	n.generateRealNodeSet(config)
 	n.generateVirtualNodeSet()
 }
 
-// TODO
+// 根据数据值导航到物理节点
 func (n *Nodes) To(key string) (addr string) {
-	return ""
+	vnhi := n.toVirtualNode(key)
+	return n.toRealNode(vnhi)
 }
 
-// TODO
-func (n *Nodes) toVirtualNode(key string) (hashValue uint32) {
-	return 0
+// 根据数据键值得到所属的虚拟节点的hash索引
+func (n *Nodes) toVirtualNode(key string) (vnhi uint32) {
+	hashIndex := hasher.GetHashValue(key)
+	var min uint32 = 0xFFFFFFFF
+	for k, _ := range n.virtualNodes {
+		if hashIndex <= k && min >= k {
+			min = k
+		}
+	}
+	return min
 }
 
-// TODO
-func (n *Nodes) toRealNode() (addr string) {
-	return ""
+// 根据虚拟节点的hash索引得到物理节点地址
+func (n *Nodes) toRealNode(vnhi uint32) (addr string) {
+	vnode := n.virtualNodes[vnhi]
+	str := strings.Split(vnode, "#")
+	return str[0]
 }

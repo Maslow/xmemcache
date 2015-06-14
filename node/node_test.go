@@ -2,22 +2,35 @@ package node
 
 import (
 	"fmt"
+	"github.com/maslow/xmemcache/config"
 	"testing"
 )
 
-func Test_generateReadNodeSet(t *testing.T) {
-
-}
-
-func Test_generateVirtualNodeSet(t *testing.T) {
-
+func Test_To(t *testing.T) {
+	servers := config.GetServers()
+	nodes := new(Nodes)
+	nodes.Init(servers)
+	key := "kissme"
+	if nodes.To(key) != nodes.To(key) {
+		t.Error("Error: these two result should be equal to each other")
+	}
+	rn := nodes.To(key)
+	i := 0
+	for ; i < len(servers); i++ {
+		if rn == servers[i] {
+			break
+		}
+	}
+	if i >= len(servers) {
+		t.Error("the result is not in the real node list provided by config")
+	}
 }
 
 //测试虚拟节点分散程度
 func Test_hitRate(t *testing.T) {
-	config := []string{"12.108.111.20", "19.168.3.61", "192.168.33.52", "192.168.333.13", "192.68.33.14", "12.168.33.15", "192.16.3.16"}
+	servers := config.GetServers()
 	nodes := new(Nodes)
-	nodes.Init(config)
+	nodes.Init(servers)
 
 	rnCount := uint32(len(nodes.realNodes))
 	var max uint32 = 0xFFFFFFFF
