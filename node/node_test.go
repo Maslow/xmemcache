@@ -10,7 +10,7 @@ func Test_To(t *testing.T) {
 	servers := config.GetServers()
 	nodes := new(Nodes)
 	nodes.Init(servers)
-	key := "kissme"
+	key := "rocky52"
 	if nodes.To(key) != nodes.To(key) {
 		t.Error("Error: these two result should be equal to each other")
 	}
@@ -22,7 +22,7 @@ func Test_To(t *testing.T) {
 		}
 	}
 	if i >= len(servers) {
-		t.Error("the result is not in the real node list provided by config")
+		t.Errorf("the result is not in the real node list provided by config: %s", rn)
 	}
 }
 

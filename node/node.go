@@ -1,13 +1,11 @@
 package node
 
 import (
+	"github.com/maslow/xmemcache/config"
 	"github.com/maslow/xmemcache/hasher"
 	"strconv"
 	"strings"
 )
-
-//默认<复制个数>
-const defaultCopyCount = 50
 
 const (
 	NODE_STATUS_ACTIVE   = 0
@@ -23,7 +21,7 @@ type Nodes struct {
 func (n *Nodes) generateVirtualNodeSet() {
 	n.virtualNodes = make(map[uint32]string)
 	for k, _ := range n.realNodes {
-		for i := 0; i < defaultCopyCount; i++ {
+		for i := 0; i < config.GetCopyCount(); i++ {
 			vnKey := k + "#" + strconv.Itoa(i)
 			hashValue := hasher.GetHashValue(vnKey)
 			n.virtualNodes[hashValue] = vnKey
@@ -54,13 +52,24 @@ func (n *Nodes) To(key string) (addr string) {
 // 根据数据键值得到所属的虚拟节点的hash索引
 func (n *Nodes) toVirtualNode(key string) (vnhi uint32) {
 	hashIndex := hasher.GetHashValue(key)
-	var min uint32 = 0xFFFFFFFF
+
+	vnhi = 0xFFFFFFFF
+	min := vnhi
 	for k, _ := range n.virtualNodes {
-		if hashIndex <= k && min >= k {
+		if hashIndex <= k && vnhi > k {
+			vnhi = k
+		}
+		if min > k {
 			min = k
 		}
 	}
-	return min
+	if 0xFFFFFFFF == vnhi {
+		if _, ok := n.virtualNodes[vnhi]; !ok {
+			vnhi = min
+		}
+	}
+
+	return vnhi
 }
 
 // 根据虚拟节点的hash索引得到物理节点地址

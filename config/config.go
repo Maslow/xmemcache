@@ -1,6 +1,14 @@
 package config
 
 func GetServers() []string {
-	config := []string{"12.108.111.20", "19.168.3.61", "192.168.33.52", "192.168.333.13", "192.68.33.14", "12.168.33.15", "192.16.3.16"}
+	config := []string{"192.168.33.60:11211", "192.168.33.61:11211", "192.168.33.62:11211", "192.168.33.63:11211"}
 	return config
+}
+
+func GetListenAddr() string {
+	return ":11211"
+}
+
+func GetCopyCount() int {
+	return 500
 }
