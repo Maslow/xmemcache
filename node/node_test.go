@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func Test_Add(t *testing.T) {
+	t.Error("TODO please write the test code")
+}
+
+func Test_Remove(t *testing.T) {
+	t.Error("TODO please write the test code")
+}
+
 func Test_To(t *testing.T) {
 	servers := config.GetServers()
 	nodes := new(Nodes)

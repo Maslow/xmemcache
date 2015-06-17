@@ -7,6 +7,7 @@ import (
 	"github.com/maslow/xmemcache/protocol"
 	"net"
 	"os"
+	"time"
 )
 
 var nodes *node.Nodes
@@ -14,20 +15,23 @@ var nodes *node.Nodes
 func main() {
 	nodes = new(node.Nodes)
 	nodes.Init(config.GetServers())
-
-	lnr, err := net.Listen("tcp", config.GetListenAddr())
-	if nil != err {
-		fmt.Fprint(os.Stderr, err)
+	addr := config.GetListenAddr()
+	lnr, e := net.Listen("tcp", addr)
+	if nil != e {
+		fmt.Fprint(os.Stderr, e)
 	}
-	fmt.Fprintf(os.Stdout, "Start listening on %s\n", config.GetListenAddr())
 	defer lnr.Close()
+
+	go nodes.Doctor()
+
 	for {
-		conn, err := lnr.Accept()
-		if nil != err {
-			fmt.Fprint(os.Stderr, err)
+		conn, e := lnr.Accept()
+		if nil != e {
+			fmt.Fprint(os.Stderr, e)
 		}
 		go deal(conn)
 	}
+
 }
 
 func deal(conn net.Conn) {
@@ -42,18 +46,19 @@ func deal(conn net.Conn) {
 		packet := new(protocol.Packet)
 		if false == packet.Parse(buf[0:n]) {
 			fmt.Fprint(os.Stderr, "Could not parse key from request")
+			conn.Write([]byte("Error"))
 			continue
 		}
 		key := packet.GetKey()
 		ip := nodes.To(string(key))
+
 		fmt.Printf("%s : ", key)
 		fmt.Println(ip)
 
-		//TODO  添加超时处理
-		//TODO  实现连接池，避免重复连接
-		mconn, err := net.Dial("tcp", ip)
+		mconn, err := net.DialTimeout("tcp", ip, time.Second)
 		if err != nil {
 			fmt.Fprint(os.Stderr, err)
+			// TODO send [Not Found] response to client.
 			continue
 		}
 

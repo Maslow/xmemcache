@@ -12,3 +12,7 @@ func GetListenAddr() string {
 func GetCopyCount() int {
 	return 500
 }
+
+func GetConcurrencyCount() int {
+	return 100
+}

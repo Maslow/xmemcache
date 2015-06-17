@@ -16,7 +16,7 @@ type PacketHeader struct {
 	vbucketIdOrStatus [2]byte //Vbucket id in request: The virtual bucket for this command. Or status in response: Status of the response (non-zero on error)
 	totalBodyLength   uint32  //Length in bytes of extra + key + value
 	opaque            [4]byte //Will be copied back to you in the response
-	CAS               [8]byte //Data version check
+	CAS               [8]byte //data version check
 }
 
 func (p *PacketHeader) parseHeader(data []byte) bool {
